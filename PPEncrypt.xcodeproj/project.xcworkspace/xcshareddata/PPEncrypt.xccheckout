@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>22EF5F8D-411D-4504-B0E5-C2714B58A138</string>
+	<key>IDESourceControlProjectName</key>
+	<string>PPEncrypt</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>8CDB6077-3DAF-4772-A9EA-5481A2F6072B</key>
+		<string>https://alvarez-server.1409913338.members.btmm.icloud.com/git/PPEncrypt.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>PPEncrypt.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>8CDB6077-3DAF-4772-A9EA-5481A2F6072B</key>
+		<string>../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://alvarez-server.1409913338.members.btmm.icloud.com/git/PPEncrypt.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>8CDB6077-3DAF-4772-A9EA-5481A2F6072B</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>8CDB6077-3DAF-4772-A9EA-5481A2F6072B</string>
+			<key>IDESourceControlWCCName</key>
+			<string>PPEncrypt</string>
+		</dict>
+	</array>
+</dict>
+</plist>

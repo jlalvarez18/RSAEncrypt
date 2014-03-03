@@ -53,6 +53,7 @@
 		0D28501D18C50FC10040CE06 /* PPEncryptTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "PPEncryptTests-Info.plist"; sourceTree = "<group>"; };
 		0D28501F18C50FC10040CE06 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		0D28502118C50FC10040CE06 /* PPEncryptTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PPEncryptTests.m; sourceTree = "<group>"; };
+		0D28502B18C50FD80040CE06 /* libcommonCrypto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcommonCrypto.dylib; path = usr/lib/system/libcommonCrypto.dylib; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,6 +101,7 @@
 		0D28500418C50FC10040CE06 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				0D28502B18C50FD80040CE06 /* libcommonCrypto.dylib */,
 				0D28500518C50FC10040CE06 /* Foundation.framework */,
 				0D28501318C50FC10040CE06 /* XCTest.framework */,
 				0D28501618C50FC10040CE06 /* UIKit.framework */,
@@ -334,7 +336,11 @@
 				DSTROOT = /tmp/PPEncrypt.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "PPEncrypt/PPEncrypt-Prefix.pch";
-				OTHER_LDFLAGS = "-ObjC";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SDKROOT)/usr/lib/system",
+				);
+				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};
@@ -346,7 +352,11 @@
 				DSTROOT = /tmp/PPEncrypt.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "PPEncrypt/PPEncrypt-Prefix.pch";
-				OTHER_LDFLAGS = "-ObjC";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SDKROOT)/usr/lib/system",
+				);
+				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};
