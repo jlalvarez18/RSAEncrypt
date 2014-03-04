@@ -85,6 +85,10 @@ static NSString *FakePrivateTagName = @"com.alvarezproductions.private.fake";
     NSString *fakeDecryptedString = [PPEncrypt decryptRSA:encryptedString key:self.fakePrivateKey];
     
     XCTAssertNil(fakeDecryptedString, @"This must be nil");
+    
+    fakeDecryptedString = [PPEncrypt decryptRSA:encryptedString key:publicKey];
+    
+    XCTAssertNil(fakeDecryptedString, @"This must be nil");
 }
 
 @end
