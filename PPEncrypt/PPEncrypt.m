@@ -10,14 +10,11 @@
 
 #import <CommonCrypto/CommonCrypto.h>
 
-NSString *const kPublicKeyPairKey = @"PublicKeyPairKey";
-NSString *const kPrivateKeyPairKey = @"PrivateKeyPairKey";
-
 @import Security;
 
 @implementation PPEncrypt
 
-+(NSString *)encryptRSA:(NSString *)plainTextString key:(SecKeyRef)publicKey {
++ (NSString *)encryptRSA:(NSString *)plainTextString key:(SecKeyRef)publicKey {
 	size_t cipherBufferSize = SecKeyGetBlockSize(publicKey);
 	uint8_t *cipherBuffer = malloc(cipherBufferSize);
 	uint8_t *nonce = (uint8_t *)[plainTextString UTF8String];
@@ -33,7 +30,7 @@ NSString *const kPrivateKeyPairKey = @"PrivateKeyPairKey";
 	return encryptedString;
 }
 
-+(NSString *)decryptRSA:(NSString *)cipherString key:(SecKeyRef)privateKey {
++ (NSString *)decryptRSA:(NSString *)cipherString key:(SecKeyRef)privateKey {
 	size_t plainBufferSize = SecKeyGetBlockSize(privateKey);
 	uint8_t *plainBuffer = malloc(plainBufferSize);
     NSData *incomingData = [[NSData alloc] initWithBase64EncodedString:cipherString options:0];
@@ -51,10 +48,10 @@ NSString *const kPrivateKeyPairKey = @"PrivateKeyPairKey";
     return decryptedString;
 }
 
-+(void)generateKeyPairWithPublicTag:(NSString *)publicTagString
-                         privateTag:(NSString *)privateTagString
-                          publicKey:(SecKeyRef *)publicKey
-                         privateKey:(SecKeyRef *)privateKey
++ (void)generateKeyPairWithPublicTag:(NSString *)publicTagString
+                          privateTag:(NSString *)privateTagString
+                           publicKey:(SecKeyRef *)publicKey
+                          privateKey:(SecKeyRef *)privateKey
 {
 	NSData *publicTag = [publicTagString dataUsingEncoding:NSUTF8StringEncoding];
 	NSData *privateTag = [privateTagString dataUsingEncoding:NSUTF8StringEncoding];
