@@ -81,4 +81,21 @@ static NSString *FakeIdentifier = @"com.alvarezproductions.fake";
     XCTAssertNil(fakeDecryptedString, @"fakeDecryptedString should be nil");
 }
 
+- (void)testSigning
+{
+    NSString *testString = @"jlalvarez18@gmail.com";
+    
+    NSData *signedData = [PPEncrypt signString:testString withPair:self.realPair];
+    
+    XCTAssertNotNil(signedData, @"signedString should not be nil");
+    
+    BOOL verified = [PPEncrypt verifyString:testString withSignature:signedData andPair:self.realPair];
+    
+    XCTAssertEqual(verified, YES, @"verification should succeed");
+    
+    BOOL shouldFail = [PPEncrypt verifyString:testString withSignature:signedData andPair:self.fakePair];
+    
+    XCTAssertEqual(shouldFail, NO, @"verification should failed");
+}
+
 @end

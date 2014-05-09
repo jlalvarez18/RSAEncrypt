@@ -10,6 +10,9 @@
 
 #import <CommonCrypto/CommonCrypto.h>
 
+#import "NSString+SHADigest.h"
+#import "NSData+SHADigest.h"
+
 // Inspiration from https://github.com/kuapay/iOS-Certificate--Key--and-Trust-Sample-Project
 
 static unsigned char oidSequence [] = { 0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x01, 0x01, 0x05, 0x00 };
@@ -92,17 +95,19 @@ static unsigned char oidSequence [] = { 0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48
         uint8_t *cipherBuffer = malloc(cipherBufferSize);
         uint8_t *nonce = (uint8_t *)[string UTF8String];
         
-        SecKeyEncrypt(publicKey,
-                      kSecPaddingOAEP,
-                      nonce,
-                      strlen( (char*)nonce ),
-                      &cipherBuffer[0],
-                      &cipherBufferSize);
+        OSStatus status = SecKeyEncrypt(publicKey,
+                                        kSecPaddingOAEP,
+                                        nonce,
+                                        strlen( (char*)nonce ),
+                                        &cipherBuffer[0],
+                                        &cipherBufferSize);
         
-        NSData *encryptedData = [NSData dataWithBytes:cipherBuffer length:cipherBufferSize];
-        NSString *encryptedString = [encryptedData base64EncodedStringWithOptions:0];
-        
-        return encryptedString;
+        if (status == errSecSuccess) {
+            NSData *encryptedData = [NSData dataWithBytes:cipherBuffer length:cipherBufferSize];
+            NSString *encryptedString = [encryptedData base64EncodedStringWithOptions:0];
+            
+            return encryptedString;
+        }
     }
     
     return nil;
@@ -137,6 +142,71 @@ static unsigned char oidSequence [] = { 0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48
     }
     
     return nil;
+}
+
++ (NSData *)signString:(NSString *)string withPair:(PPKeyPair *)pair
+{
+    if (!string) {
+        return nil;
+    }
+    
+    SecKeyRef privateKey = [self keyRefWithTag:[self privateKeyIdentifierWithTag:pair.identifier] error:nil];
+    
+    if (privateKey) {
+        NSData *sha1Digest = [string SHA1Digest];
+        
+        size_t maxLength = SecKeyGetBlockSize(privateKey) - 11;
+        
+        if ([sha1Digest length] > maxLength) {
+            NSString *reason = [NSString stringWithFormat:@"Digest is too long to sign with this key, max length is %ld and actual length is %ld", maxLength, (unsigned long)string.length];
+            NSException *ex = [NSException exceptionWithName:@"PPInvalidArgumentException" reason:reason userInfo:nil];
+            @throw ex;
+        }
+        
+        uint8_t *plainBuffer = (uint8_t *)[sha1Digest bytes];
+        size_t plainBufferSize = [sha1Digest length];
+        size_t cipherBufferSize = SecKeyGetBlockSize(privateKey);
+        uint8_t *cipherBuffer = malloc(cipherBufferSize * sizeof(uint8_t));
+        
+        OSStatus status = SecKeyRawSign(privateKey,
+                                        kSecPaddingPKCS1SHA1,
+                                        plainBuffer,
+                                        plainBufferSize,
+                                        &cipherBuffer[0],
+                                        &cipherBufferSize);
+        
+        if (status == errSecSuccess) {
+            NSData *signedData = [NSData dataWithBytesNoCopy:cipherBuffer length:cipherBufferSize freeWhenDone:YES];
+            
+            return signedData;
+        }
+    }
+    
+    return nil;
+}
+
++ (BOOL)verifyString:(NSString *)stringToVerify withSignature:(NSData *)signature andPair:(PPKeyPair *)pair
+{
+    if (!signature) {
+        return NO;
+    }
+    
+    SecKeyRef publicKey = [self keyRefWithTag:[self publicKeyIdentifierWithTag:pair.identifier] error:nil];
+    
+    if (publicKey) {
+        NSData *dataToVerify = [stringToVerify SHA1Digest];
+        
+        OSStatus status = SecKeyRawVerify(publicKey,
+                                          kSecPaddingPKCS1SHA1,
+                                          dataToVerify.bytes,
+                                          dataToVerify.length,
+                                          signature.bytes,
+                                          signature.length);
+        
+        return (status == errSecSuccess);
+    }
+    
+    return NO;
 }
 
 #pragma mark - Private Methods

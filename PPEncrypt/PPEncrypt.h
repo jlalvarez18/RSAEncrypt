@@ -25,4 +25,7 @@ typedef NS_ENUM(NSInteger, PPEncryptRSASize) {
 + (NSString *)encryptString:(NSString *)string withPair:(PPKeyPair *)pair;
 + (NSString *)decryptString:(NSString *)string withPair:(PPKeyPair *)pair;
 
++ (NSData *)signString:(NSString *)string withPair:(PPKeyPair *)pair;
++ (BOOL)verifyString:(NSString *)stringToVerify withSignature:(NSData *)signature andPair:(PPKeyPair *)pair;
+
 @end

@@ -17,6 +17,10 @@
 		0D28502018C50FC10040CE06 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0D28501E18C50FC10040CE06 /* InfoPlist.strings */; };
 		0D28502218C50FC10040CE06 /* PPEncryptTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 0D28502118C50FC10040CE06 /* PPEncryptTests.m */; };
 		AB1B1F0E191C184E0002610B /* PPKeyPair.m in Sources */ = {isa = PBXBuildFile; fileRef = AB1B1F0D191C184E0002610B /* PPKeyPair.m */; };
+		AB36535D191D4AB300F3002F /* NSData+SHADigest.m in Sources */ = {isa = PBXBuildFile; fileRef = AB36535C191D4AB300F3002F /* NSData+SHADigest.m */; };
+		AB365360191D556D00F3002F /* NSString+SHADigest.m in Sources */ = {isa = PBXBuildFile; fileRef = AB36535F191D556D00F3002F /* NSString+SHADigest.m */; };
+		AB6329BA191D5AB600770EFC /* NSString+SHADigest.m in Sources */ = {isa = PBXBuildFile; fileRef = AB36535F191D556D00F3002F /* NSString+SHADigest.m */; };
+		AB6329BB191D5AB600770EFC /* NSData+SHADigest.m in Sources */ = {isa = PBXBuildFile; fileRef = AB36535C191D4AB300F3002F /* NSData+SHADigest.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -57,6 +61,10 @@
 		0D28502B18C50FD80040CE06 /* libcommonCrypto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcommonCrypto.dylib; path = usr/lib/system/libcommonCrypto.dylib; sourceTree = SDKROOT; };
 		AB1B1F0C191C184E0002610B /* PPKeyPair.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PPKeyPair.h; sourceTree = "<group>"; };
 		AB1B1F0D191C184E0002610B /* PPKeyPair.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PPKeyPair.m; sourceTree = "<group>"; };
+		AB36535B191D4AB300F3002F /* NSData+SHADigest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+SHADigest.h"; sourceTree = "<group>"; };
+		AB36535C191D4AB300F3002F /* NSData+SHADigest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+SHADigest.m"; sourceTree = "<group>"; };
+		AB36535E191D556D00F3002F /* NSString+SHADigest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+SHADigest.h"; sourceTree = "<group>"; };
+		AB36535F191D556D00F3002F /* NSString+SHADigest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+SHADigest.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -119,6 +127,7 @@
 				0D28500C18C50FC10040CE06 /* PPEncrypt.m */,
 				AB1B1F0C191C184E0002610B /* PPKeyPair.h */,
 				AB1B1F0D191C184E0002610B /* PPKeyPair.m */,
+				AB365361191D562300F3002F /* Categories */,
 				0D28500818C50FC10040CE06 /* Supporting Files */,
 			);
 			path = PPEncrypt;
@@ -148,6 +157,17 @@
 				0D28501E18C50FC10040CE06 /* InfoPlist.strings */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		AB365361191D562300F3002F /* Categories */ = {
+			isa = PBXGroup;
+			children = (
+				AB36535E191D556D00F3002F /* NSString+SHADigest.h */,
+				AB36535F191D556D00F3002F /* NSString+SHADigest.m */,
+				AB36535B191D4AB300F3002F /* NSData+SHADigest.h */,
+				AB36535C191D4AB300F3002F /* NSData+SHADigest.m */,
+			);
+			name = Categories;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -194,7 +214,7 @@
 		0D284FFA18C50FC00040CE06 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0500;
+				LastUpgradeCheck = 0510;
 				ORGANIZATIONNAME = "Alvarez Productions";
 			};
 			buildConfigurationList = 0D284FFD18C50FC00040CE06 /* Build configuration list for PBXProject "PPEncrypt" */;
@@ -233,6 +253,8 @@
 			files = (
 				0D28500D18C50FC10040CE06 /* PPEncrypt.m in Sources */,
 				AB1B1F0E191C184E0002610B /* PPKeyPair.m in Sources */,
+				AB365360191D556D00F3002F /* NSString+SHADigest.m in Sources */,
+				AB36535D191D4AB300F3002F /* NSData+SHADigest.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -240,6 +262,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AB6329BA191D5AB600770EFC /* NSString+SHADigest.m in Sources */,
+				AB6329BB191D5AB600770EFC /* NSData+SHADigest.m in Sources */,
 				0D28502218C50FC10040CE06 /* PPEncryptTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -270,7 +294,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
@@ -308,7 +331,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
@@ -371,7 +393,6 @@
 		0D28502918C50FC10040CE06 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SDKROOT)/Developer/Library/Frameworks",
 					"$(inherited)",
@@ -392,7 +413,6 @@
 		0D28502A18C50FC10040CE06 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SDKROOT)/Developer/Library/Frameworks",
 					"$(inherited)",
