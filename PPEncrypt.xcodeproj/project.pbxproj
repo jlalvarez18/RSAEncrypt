@@ -16,6 +16,7 @@
 		0D28501A18C50FC10040CE06 /* libPPEncrypt.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0D28500218C50FC10040CE06 /* libPPEncrypt.a */; };
 		0D28502018C50FC10040CE06 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0D28501E18C50FC10040CE06 /* InfoPlist.strings */; };
 		0D28502218C50FC10040CE06 /* PPEncryptTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 0D28502118C50FC10040CE06 /* PPEncryptTests.m */; };
+		AB1B1F0E191C184E0002610B /* PPKeyPair.m in Sources */ = {isa = PBXBuildFile; fileRef = AB1B1F0D191C184E0002610B /* PPKeyPair.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -54,6 +55,8 @@
 		0D28501F18C50FC10040CE06 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		0D28502118C50FC10040CE06 /* PPEncryptTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PPEncryptTests.m; sourceTree = "<group>"; };
 		0D28502B18C50FD80040CE06 /* libcommonCrypto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcommonCrypto.dylib; path = usr/lib/system/libcommonCrypto.dylib; sourceTree = SDKROOT; };
+		AB1B1F0C191C184E0002610B /* PPKeyPair.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PPKeyPair.h; sourceTree = "<group>"; };
+		AB1B1F0D191C184E0002610B /* PPKeyPair.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PPKeyPair.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -114,6 +117,8 @@
 			children = (
 				0D28500A18C50FC10040CE06 /* PPEncrypt.h */,
 				0D28500C18C50FC10040CE06 /* PPEncrypt.m */,
+				AB1B1F0C191C184E0002610B /* PPKeyPair.h */,
+				AB1B1F0D191C184E0002610B /* PPKeyPair.m */,
 				0D28500818C50FC10040CE06 /* Supporting Files */,
 			);
 			path = PPEncrypt;
@@ -227,6 +232,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0D28500D18C50FC10040CE06 /* PPEncrypt.m in Sources */,
+				AB1B1F0E191C184E0002610B /* PPKeyPair.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -419,6 +425,7 @@
 				0D28502718C50FC10040CE06 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		0D28502818C50FC10040CE06 /* Build configuration list for PBXNativeTarget "PPEncryptTests" */ = {
 			isa = XCConfigurationList;
@@ -427,6 +434,7 @@
 				0D28502A18C50FC10040CE06 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

@@ -9,14 +9,13 @@
 #import <XCTest/XCTest.h>
 #import "PPEncrypt.h"
 
-static NSString *PublicTagName = @"com.alvarezproductions.public";
-static NSString *PrivateTagName = @"com.alvarezproductions.private";
-
-static NSString *FakePrivateTagName = @"com.alvarezproductions.private.fake";
+static NSString *RealIdentifier = @"com.alvarezproductions.real";
+static NSString *FakeIdentifier = @"com.alvarezproductions.fake";
 
 @interface PPEncryptTests : XCTestCase
 
-@property (nonatomic, assign) SecKeyRef fakePrivateKey;
+@property (nonatomic, assign) PPKeyPair *fakePair;
+@property (nonatomic, assign) PPKeyPair *realPair;
 
 @end
 
@@ -27,68 +26,59 @@ static NSString *FakePrivateTagName = @"com.alvarezproductions.private.fake";
     [super setUp];
     // Put setup code here. This method is called before the invocation of each test method in the class.
     
-    SecKeyRef publicKey = NULL;
-    SecKeyRef privateKey = NULL;
-    
-    [PPEncrypt generateKeyPairWithPublicTag:PublicTagName
-                                 privateTag:PrivateTagName
-                                  publicKey:&publicKey
-                                 privateKey:&privateKey];
-    
-    self.fakePrivateKey = privateKey;
+    self.fakePair = [self getPairWithIdentifier:FakeIdentifier];
+    self.realPair = [self getPairWithIdentifier:RealIdentifier];
 }
 
 - (void)tearDown
 {
+    self.fakePair = nil;
+    self.realPair = nil;
+    
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [super tearDown];
 }
 
-- (void)testEncryptDecrypt
+- (PPKeyPair *)getPairWithIdentifier:(NSString *)identifier
 {
-    SecKeyRef publicKey = NULL;
-    SecKeyRef privateKey = NULL;
+    PPKeyPair *pair = [PPEncrypt keyPairWithIdentifier:identifier];
     
-    [PPEncrypt generateKeyPairWithPublicTag:PublicTagName
-                                 privateTag:PrivateTagName
-                                  publicKey:&publicKey
-                                 privateKey:&privateKey];
+    if (pair == nil) {
+        pair = [PPEncrypt generateKeyPairWithSize:PPEncryptRSASize1024 identifier:identifier];
+    }
     
-    NSString *testingString = @"Put setup code here. This method is called before the invocation of each test method in the class.";
-    
-    NSString *encryptedString = [PPEncrypt encryptRSA:testingString key:publicKey];
-    
-    NSString *decryptedString = [PPEncrypt decryptRSA:encryptedString key:privateKey];
-    
-    XCTAssertEqualObjects(testingString, decryptedString, @"These strings must be equal.");
+    return pair;
 }
 
-- (void)testKeysRetrival
+- (void)testPairGeneration
 {
-    SecKeyRef publicKey = NULL;
-    SecKeyRef privateKey = NULL;
+    PPKeyPair *pair = [PPEncrypt generateKeyPairWithSize:PPEncryptRSASize1024 identifier:nil];
     
-    publicKey = [PPEncrypt getKeyWithTag:PublicTagName];
-    privateKey = [PPEncrypt getKeyWithTag:PrivateTagName];
+    XCTAssertNotNil(pair, @"Should not be nil");
+}
+
+- (void)testEncryptDecrypt
+{
+    NSString *testString = @"Put setup code here. This method is called before the invocation of each test method in the class.";
     
-    XCTAssertNotNil((__bridge id)publicKey, @"This must not be nil");
-    XCTAssertNotNil((__bridge id)privateKey, @"This must not be nil");
+    NSString *encryptedString = [PPEncrypt encryptString:testString withPair:self.realPair];
     
-    NSString *testingString = @"This is so fucking cool!";
+    XCTAssertNotNil(encryptedString, @"Encrypted string should not be nil");
     
-    NSString *encryptedString = [PPEncrypt encryptRSA:testingString key:publicKey];
+    NSString *decryptedString = [PPEncrypt decryptString:encryptedString withPair:self.realPair];
     
-    NSString *decryptedString = [PPEncrypt decryptRSA:encryptedString key:privateKey];
+    XCTAssertNotNil(decryptedString, @"Decrypted string should not be nil");
+    XCTAssertEqualObjects(testString, decryptedString, @"The test string and decrypted string should be equal");
+}
+
+- (void)testPairAuthenticity
+{
+    NSString *testString = @"Put setup code here. This method is called before the invocation of each test method in the class.";
     
-    XCTAssertEqualObjects(testingString, decryptedString, @"These strings must be equal.");
+    NSString *encryptedString = [PPEncrypt encryptString:testString withPair:self.realPair];
+    NSString *fakeDecryptedString = [PPEncrypt decryptString:encryptedString withPair:self.fakePair];
     
-    NSString *fakeDecryptedString = [PPEncrypt decryptRSA:encryptedString key:self.fakePrivateKey];
-    
-    XCTAssertNil(fakeDecryptedString, @"This must be nil");
-    
-    fakeDecryptedString = [PPEncrypt decryptRSA:encryptedString key:publicKey];
-    
-    XCTAssertNil(fakeDecryptedString, @"This must be nil");
+    XCTAssertNil(fakeDecryptedString, @"fakeDecryptedString should be nil");
 }
 
 @end
