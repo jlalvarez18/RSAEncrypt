@@ -82,7 +82,7 @@ static unsigned char oidSequence [] = { 0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48
     return pair;
 }
 
-+ (NSString *)encryptString:(NSString *)string withPair:(PPKeyPair *)pair
++ (NSString *)encryptString:(NSString *)string withPadding:(PPEncryptPaddingType)padding andPair:(PPKeyPair *)pair
 {
     if (!string) {
         return nil;
@@ -96,7 +96,7 @@ static unsigned char oidSequence [] = { 0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48
         uint8_t *nonce = (uint8_t *)[string UTF8String];
         
         OSStatus status = SecKeyEncrypt(publicKey,
-                                        kSecPaddingOAEP,
+                                        padding,
                                         nonce,
                                         strlen( (char*)nonce ),
                                         &cipherBuffer[0],
@@ -113,7 +113,7 @@ static unsigned char oidSequence [] = { 0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48
     return nil;
 }
 
-+ (NSString *)decryptString:(NSString *)string withPair:(PPKeyPair *)pair
++ (NSString *)decryptString:(NSString *)string withPadding:(PPEncryptPaddingType)padding andPair:(PPKeyPair *)pair
 {
     if (!pair) {
         return nil;
@@ -129,7 +129,7 @@ static unsigned char oidSequence [] = { 0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48
         size_t cipherBufferSize = SecKeyGetBlockSize(privateKey);
         
         SecKeyDecrypt(privateKey,
-                      kSecPaddingOAEP,
+                      padding,
                       cipherBuffer,
                       cipherBufferSize,
                       plainBuffer,
@@ -144,32 +144,32 @@ static unsigned char oidSequence [] = { 0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48
     return nil;
 }
 
-+ (NSData *)signString:(NSString *)string withPair:(PPKeyPair *)pair
++ (NSData *)signData:(NSData *)data hashType:(PPEncryptHashType)hashType withPair:(PPKeyPair *)pair
 {
-    if (!string) {
+    if (!data) {
         return nil;
     }
     
     SecKeyRef privateKey = [self keyRefWithTag:[self privateKeyIdentifierWithTag:pair.identifier] error:nil];
     
     if (privateKey) {
-        NSData *sha1Digest = [string SHA1Digest];
+        NSData *digest = [self digestForData:data withType:hashType];
         
         size_t maxLength = SecKeyGetBlockSize(privateKey) - 11;
         
-        if ([sha1Digest length] > maxLength) {
-            NSString *reason = [NSString stringWithFormat:@"Digest is too long to sign with this key, max length is %ld and actual length is %ld", maxLength, (unsigned long)string.length];
+        if ([digest length] > maxLength) {
+            NSString *reason = [NSString stringWithFormat:@"Digest is too long to sign with this key, max length is %ld and actual length is %ld", maxLength, (unsigned long)data.length];
             NSException *ex = [NSException exceptionWithName:@"PPInvalidArgumentException" reason:reason userInfo:nil];
             @throw ex;
         }
         
-        uint8_t *plainBuffer = (uint8_t *)[sha1Digest bytes];
-        size_t plainBufferSize = [sha1Digest length];
+        uint8_t *plainBuffer = (uint8_t *)[digest bytes];
+        size_t plainBufferSize = [digest length];
         size_t cipherBufferSize = SecKeyGetBlockSize(privateKey);
         uint8_t *cipherBuffer = malloc(cipherBufferSize * sizeof(uint8_t));
         
         OSStatus status = SecKeyRawSign(privateKey,
-                                        kSecPaddingPKCS1SHA1,
+                                        [self secPaddingForHashType:hashType],
                                         plainBuffer,
                                         plainBufferSize,
                                         &cipherBuffer[0],
@@ -185,7 +185,7 @@ static unsigned char oidSequence [] = { 0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48
     return nil;
 }
 
-+ (BOOL)verifyString:(NSString *)stringToVerify withSignature:(NSData *)signature andPair:(PPKeyPair *)pair
++ (BOOL)verifyData:(NSData *)data againstSignature:(NSData *)signature hashType:(PPEncryptHashType)hashType andPair:(PPKeyPair *)pair
 {
     if (!signature) {
         return NO;
@@ -194,10 +194,10 @@ static unsigned char oidSequence [] = { 0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48
     SecKeyRef publicKey = [self keyRefWithTag:[self publicKeyIdentifierWithTag:pair.identifier] error:nil];
     
     if (publicKey) {
-        NSData *dataToVerify = [stringToVerify SHA1Digest];
+        NSData *dataToVerify = [self digestForData:data withType:hashType];
         
         OSStatus status = SecKeyRawVerify(publicKey,
-                                          kSecPaddingPKCS1SHA1,
+                                          [self secPaddingForHashType:hashType],
                                           dataToVerify.bytes,
                                           dataToVerify.length,
                                           signature.bytes,
@@ -210,6 +210,58 @@ static unsigned char oidSequence [] = { 0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48
 }
 
 #pragma mark - Private Methods
+
++ (SecPadding)secPaddingForHashType:(PPEncryptHashType)hashType
+{
+    switch (hashType) {
+        case PPEncryptHashTypeSHA1:
+            return kSecPaddingPKCS1SHA1;
+            break;
+        case PPEncryptHashTypeSHA224:
+            return kSecPaddingPKCS1SHA224;
+            break;
+        case PPEncryptHashTypeSHA256:
+            return kSecPaddingPKCS1SHA256;
+            break;
+        case PPEncryptHashTypeSHA384:
+            return kSecPaddingPKCS1SHA384;
+            break;
+        case PPEncryptHashTypeSHA512:
+            return kSecPaddingPKCS1SHA512;
+            break;
+            
+        default:
+            break;
+    }
+    
+    return kSecPaddingNone;
+}
+
++ (NSData *)digestForData:(NSData *)data withType:(PPEncryptHashType)hashType
+{
+    switch (hashType) {
+        case PPEncryptHashTypeSHA1:
+            return [data SHA1Digest];
+            break;
+        case PPEncryptHashTypeSHA224:
+            return [data SHA224Digest];
+            break;
+        case PPEncryptHashTypeSHA256:
+            return [data SHA256Digest];
+            break;
+        case PPEncryptHashTypeSHA384:
+            return [data SHA384Digest];
+            break;
+        case PPEncryptHashTypeSHA512:
+            return [data SHA512Digest];
+            break;
+            
+        default:
+            break;
+    }
+    
+    return nil;
+}
 
 + (NSString *)PEMFormattedPrivateKey:(NSString *)tag error:(NSError *)error
 {

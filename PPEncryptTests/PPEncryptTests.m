@@ -61,11 +61,11 @@ static NSString *FakeIdentifier = @"com.alvarezproductions.fake";
 {
     NSString *testString = @"Put setup code here. This method is called before the invocation of each test method in the class.";
     
-    NSString *encryptedString = [PPEncrypt encryptString:testString withPair:self.realPair];
+    NSString *encryptedString = [PPEncrypt encryptString:testString withPadding:PPEncryptPaddingTypeNone andPair:self.realPair];
     
     XCTAssertNotNil(encryptedString, @"Encrypted string should not be nil");
     
-    NSString *decryptedString = [PPEncrypt decryptString:encryptedString withPair:self.realPair];
+    NSString *decryptedString = [PPEncrypt decryptString:encryptedString withPadding:PPEncryptPaddingTypeNone andPair:self.realPair];
     
     XCTAssertNotNil(decryptedString, @"Decrypted string should not be nil");
     XCTAssertEqualObjects(testString, decryptedString, @"The test string and decrypted string should be equal");
@@ -75,27 +75,44 @@ static NSString *FakeIdentifier = @"com.alvarezproductions.fake";
 {
     NSString *testString = @"Put setup code here. This method is called before the invocation of each test method in the class.";
     
-    NSString *encryptedString = [PPEncrypt encryptString:testString withPair:self.realPair];
-    NSString *fakeDecryptedString = [PPEncrypt decryptString:encryptedString withPair:self.fakePair];
+    NSString *encryptedString = [PPEncrypt encryptString:testString withPadding:PPEncryptPaddingTypeNone andPair:self.realPair];
+    NSString *fakeDecryptedString = [PPEncrypt decryptString:encryptedString withPadding:PPEncryptPaddingTypeNone andPair:self.fakePair];
     
     XCTAssertNil(fakeDecryptedString, @"fakeDecryptedString should be nil");
 }
 
-- (void)testSigning
+- (void)testValidSigning
 {
     NSString *testString = @"jlalvarez18@gmail.com";
+    NSData *testData = [testString dataUsingEncoding:NSUTF8StringEncoding];
     
-    NSData *signedData = [PPEncrypt signString:testString withPair:self.realPair];
+    NSData *signedData = [PPEncrypt signData:testData hashType:PPEncryptHashTypeSHA256 withPair:self.realPair];
     
     XCTAssertNotNil(signedData, @"signedString should not be nil");
     
-    BOOL verified = [PPEncrypt verifyString:testString withSignature:signedData andPair:self.realPair];
+    BOOL verified = [PPEncrypt verifyData:testData againstSignature:signedData hashType:PPEncryptHashTypeSHA256 andPair:self.realPair];
     
     XCTAssertEqual(verified, YES, @"verification should succeed");
+}
+
+- (void)testInvalidSigning
+{
+    NSData *message = [@"Hello@email.com" dataUsingEncoding:NSUTF8StringEncoding];
+    NSData *message2 = [@"Goodbye@email.com" dataUsingEncoding:NSUTF8StringEncoding];
     
-    BOOL shouldFail = [PPEncrypt verifyString:testString withSignature:signedData andPair:self.fakePair];
+    NSData *signedMessage = [PPEncrypt signData:message hashType:PPEncryptHashTypeSHA256 withPair:self.realPair];
     
-    XCTAssertEqual(shouldFail, NO, @"verification should failed");
+    BOOL shouldFail = [PPEncrypt verifyData:message againstSignature:signedMessage hashType:PPEncryptHashTypeSHA256 andPair:self.fakePair];
+    
+    XCTAssertEqual(shouldFail, NO, @"verifying signed message with another key pair should fail");
+    
+    NSData *otherSignedData = [PPEncrypt signData:message hashType:PPEncryptHashTypeSHA256 withPair:self.fakePair];
+    
+    XCTAssertNotEqualObjects(signedMessage, otherSignedData, @"messages signed by different key pairs should not be equal");
+    
+    NSData *signedMessage2 = [PPEncrypt signData:message2 hashType:PPEncryptHashTypeSHA256 withPair:self.realPair];
+    
+    XCTAssertNotEqualObjects(signedMessage, signedMessage2, @"different messages signed by same key pair should not be equal");
 }
 
 @end
