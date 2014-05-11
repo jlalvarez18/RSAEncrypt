@@ -90,6 +90,8 @@ static unsigned char oidSequence [] = { 0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48
     
     SecKeyRef publicKey = [self keyRefWithTag:[self publicKeyIdentifierWithTag:pair.identifier] error:nil];
     
+    NSString *encryptedString;
+    
     if (publicKey) {
         size_t cipherBufferSize = SecKeyGetBlockSize(publicKey);
         uint8_t *cipherBuffer = malloc(cipherBufferSize);
@@ -104,13 +106,14 @@ static unsigned char oidSequence [] = { 0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48
         
         if (status == errSecSuccess) {
             NSData *encryptedData = [NSData dataWithBytes:cipherBuffer length:cipherBufferSize];
-            NSString *encryptedString = [encryptedData base64EncodedStringWithOptions:0];
             
-            return encryptedString;
+            encryptedString = [encryptedData base64EncodedStringWithOptions:0];
         }
+        
+        free(cipherBuffer);
     }
     
-    return nil;
+    return encryptedString;
 }
 
 + (NSString *)decryptString:(NSString *)string withPadding:(PPEncryptPaddingType)padding andPair:(PPKeyPair *)pair
@@ -121,6 +124,8 @@ static unsigned char oidSequence [] = { 0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48
     
     SecKeyRef privateKey = [self keyRefWithTag:[self privateKeyIdentifierWithTag:pair.identifier] error:nil];
     
+    NSString *decryptedString;
+    
     if (privateKey) {
         size_t plainBufferSize = SecKeyGetBlockSize(privateKey);
         uint8_t *plainBuffer = malloc(plainBufferSize);
@@ -128,20 +133,23 @@ static unsigned char oidSequence [] = { 0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48
         uint8_t *cipherBuffer = (uint8_t*)[incomingData bytes];
         size_t cipherBufferSize = SecKeyGetBlockSize(privateKey);
         
-        SecKeyDecrypt(privateKey,
-                      padding,
-                      cipherBuffer,
-                      cipherBufferSize,
-                      plainBuffer,
-                      &plainBufferSize);
+        OSStatus status = SecKeyDecrypt(privateKey,
+                                        padding,
+                                        cipherBuffer,
+                                        cipherBufferSize,
+                                        plainBuffer,
+                                        &plainBufferSize);
         
-        NSData *decryptedData = [NSData dataWithBytes:plainBuffer length:plainBufferSize];
-        NSString *decryptedString = [[NSString alloc] initWithData:decryptedData encoding:NSUTF8StringEncoding];
+        if (status == errSecSuccess) {
+            NSData *decryptedData = [NSData dataWithBytes:plainBuffer length:plainBufferSize];
+            
+            decryptedString = [[NSString alloc] initWithData:decryptedData encoding:NSUTF8StringEncoding];
+        }
         
-        return decryptedString;
+        free(plainBuffer);
     }
     
-    return nil;
+    return decryptedString;
 }
 
 + (NSData *)signData:(NSData *)data hashType:(PPEncryptHashType)hashType withPair:(PPKeyPair *)pair
@@ -151,6 +159,8 @@ static unsigned char oidSequence [] = { 0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48
     }
     
     SecKeyRef privateKey = [self keyRefWithTag:[self privateKeyIdentifierWithTag:pair.identifier] error:nil];
+    
+    NSData *signedData;
     
     if (privateKey) {
         NSData *digest = [self digestForData:data withType:hashType];
@@ -176,13 +186,13 @@ static unsigned char oidSequence [] = { 0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48
                                         &cipherBufferSize);
         
         if (status == errSecSuccess) {
-            NSData *signedData = [NSData dataWithBytesNoCopy:cipherBuffer length:cipherBufferSize freeWhenDone:YES];
-            
-            return signedData;
+            signedData = [NSData dataWithBytes:cipherBuffer length:cipherBufferSize];
         }
+        
+        free(cipherBuffer);
     }
     
-    return nil;
+    return signedData;
 }
 
 + (BOOL)verifyData:(NSData *)data againstSignature:(NSData *)signature hashType:(PPEncryptHashType)hashType andPair:(PPKeyPair *)pair

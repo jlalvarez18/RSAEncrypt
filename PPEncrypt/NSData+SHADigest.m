@@ -73,34 +73,36 @@ typedef NS_ENUM(NSInteger, SHADigestType) {
         digestLength = CC_SHA512_DIGEST_LENGTH;
     }
     
-    unsigned char result[digestLength];
-    
-    unsigned char *state;
-    CC_LONG dataLength = (CC_LONG)self.length;
-    
-    switch (type) {
-        case SHADigestTypeSHA1:
-            state = CC_SHA1(self.bytes, dataLength, result);
-            break;
-        case SHADigestTypeSHA224:
-            state = CC_SHA224(self.bytes, dataLength, result);
-            break;
-        case SHADigestTypeSHA256:
-            state = CC_SHA256(self.bytes, dataLength, result);
-            break;
-        case SHADigestTypeSHA384:
-            state = CC_SHA384(self.bytes, dataLength, result);
-            break;
-        case SHADigestTypeSHA512:
-            state = CC_SHA512(self.bytes, dataLength, result);
-            break;
-            
-        default:
-            break;
-    }
-    
-    if (state) {
-        return [[NSData alloc] initWithBytes:result length:digestLength];
+    if (digestLength != 0) {
+        unsigned char result[digestLength];
+        
+        unsigned char *state;
+        CC_LONG dataLength = (CC_LONG)self.length;
+        
+        switch (type) {
+            case SHADigestTypeSHA1:
+                state = CC_SHA1(self.bytes, dataLength, result);
+                break;
+            case SHADigestTypeSHA224:
+                state = CC_SHA224(self.bytes, dataLength, result);
+                break;
+            case SHADigestTypeSHA256:
+                state = CC_SHA256(self.bytes, dataLength, result);
+                break;
+            case SHADigestTypeSHA384:
+                state = CC_SHA384(self.bytes, dataLength, result);
+                break;
+            case SHADigestTypeSHA512:
+                state = CC_SHA512(self.bytes, dataLength, result);
+                break;
+                
+            default:
+                break;
+        }
+        
+        if (state) {
+            return [[NSData alloc] initWithBytes:result length:digestLength];
+        }
     }
     
     return nil;
