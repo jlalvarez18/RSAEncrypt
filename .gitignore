@@ -37,3 +37,5 @@ build/
 # AppCode specific files
 .idea/
 *.iml
+PPEncrypt.xcodeproj/project.xcworkspace/xcuserdata/juanalvarez.xcuserdatad/UserInterfaceState.xcuserstate
+PPEncrypt.xcodeproj/xcuserdata/juanalvarez.xcuserdatad/xcdebugger/Breakpoints_v2.xcbkptlist
