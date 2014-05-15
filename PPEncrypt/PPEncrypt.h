@@ -17,29 +17,27 @@ typedef NS_ENUM(NSInteger, PPEncryptRSASize) {
     PPEncryptRSASize2048 = 2048
 };
 
-typedef NS_ENUM(NSInteger, PPEncryptHashType) {
-    PPEncryptHashTypeSHA1,
-    PPEncryptHashTypeSHA224,
-    PPEncryptHashTypeSHA256,
-    PPEncryptHashTypeSHA384,
-    PPEncryptHashTypeSHA512
-};
+@interface PPEncryptSettings : NSObject
 
-typedef NS_ENUM(NSInteger, PPEncryptPaddingType) {
-    PPEncryptPaddingTypeNone  = kSecPaddingNone,
-    PPEncryptPaddingTypePKCS1 = kSecPaddingPKCS1,
-    PPEncryptPaddingTypeOAEP  = kSecPaddingOAEP
-};
+@property (nonatomic, assign) PPEncryptRSASize rsaSize;
+@property (nonatomic, assign) SecPadding padding;
+
+@end
 
 @interface PPEncrypt : NSObject
+
+@property (nonatomic, strong, readonly) PPEncryptSettings *settings;
+@property (nonatomic, strong, readonly) PPKeyPair *keyPair;
+
+- (instancetype)initWithSettings:(PPEncryptSettings *)settings keyPair:(PPKeyPair *)pair;
 
 + (PPKeyPair *)generateKeyPairWithSize:(PPEncryptRSASize)size identifier:(NSString *)identifier;
 + (PPKeyPair *)keyPairWithIdentifier:(NSString *)identifier;
 
-+ (NSString *)encryptString:(NSString *)string withPadding:(PPEncryptPaddingType)padding andPair:(PPKeyPair *)pair;
-+ (NSString *)decryptString:(NSString *)string withPadding:(PPEncryptPaddingType)padding andPair:(PPKeyPair *)pair;
++ (NSData *)encryptString:(NSString *)string withPadding:(SecPadding)padding andPair:(PPKeyPair *)pair;
++ (NSString *)decryptData:(NSData *)data withPadding:(SecPadding)padding andPair:(PPKeyPair *)pair;
 
-+ (NSData *)signData:(NSData *)data hashType:(PPEncryptHashType)hashType withPair:(PPKeyPair *)pair;
-+ (BOOL)verifyData:(NSData *)data againstSignature:(NSData *)signature hashType:(PPEncryptHashType)hashType andPair:(PPKeyPair *)pair;
++ (NSData *)signData:(NSData *)data withPadding:(SecPadding)padding andPair:(PPKeyPair *)pair;
++ (BOOL)verifyData:(NSData *)data againstSignature:(NSData *)signature withPadding:(SecPadding)padding andPair:(PPKeyPair *)pair;
 
 @end

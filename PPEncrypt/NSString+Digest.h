@@ -1,5 +1,5 @@
 //
-//  NSData+SHADigest.h
+//  NSString+Digest.h
 //  PPEncrypt
 //
 //  Created by Juan Alvarez on 5/9/14.
@@ -8,8 +8,9 @@
 
 #import <Foundation/Foundation.h>
 
-@interface NSData (SHADigest)
+@interface NSString (Digest)
 
+- (NSData *)MD5Digest;
 - (NSData *)SHA1Digest;
 - (NSData *)SHA224Digest;
 - (NSData *)SHA256Digest;

@@ -17,10 +17,10 @@
 		0D28502018C50FC10040CE06 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0D28501E18C50FC10040CE06 /* InfoPlist.strings */; };
 		0D28502218C50FC10040CE06 /* PPEncryptTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 0D28502118C50FC10040CE06 /* PPEncryptTests.m */; };
 		AB1B1F0E191C184E0002610B /* PPKeyPair.m in Sources */ = {isa = PBXBuildFile; fileRef = AB1B1F0D191C184E0002610B /* PPKeyPair.m */; };
-		AB36535D191D4AB300F3002F /* NSData+SHADigest.m in Sources */ = {isa = PBXBuildFile; fileRef = AB36535C191D4AB300F3002F /* NSData+SHADigest.m */; };
-		AB365360191D556D00F3002F /* NSString+SHADigest.m in Sources */ = {isa = PBXBuildFile; fileRef = AB36535F191D556D00F3002F /* NSString+SHADigest.m */; };
-		AB6329BA191D5AB600770EFC /* NSString+SHADigest.m in Sources */ = {isa = PBXBuildFile; fileRef = AB36535F191D556D00F3002F /* NSString+SHADigest.m */; };
-		AB6329BB191D5AB600770EFC /* NSData+SHADigest.m in Sources */ = {isa = PBXBuildFile; fileRef = AB36535C191D4AB300F3002F /* NSData+SHADigest.m */; };
+		AB36535D191D4AB300F3002F /* NSData+Digest.m in Sources */ = {isa = PBXBuildFile; fileRef = AB36535C191D4AB300F3002F /* NSData+Digest.m */; };
+		AB365360191D556D00F3002F /* NSString+Digest.m in Sources */ = {isa = PBXBuildFile; fileRef = AB36535F191D556D00F3002F /* NSString+Digest.m */; };
+		AB6329BA191D5AB600770EFC /* NSString+Digest.m in Sources */ = {isa = PBXBuildFile; fileRef = AB36535F191D556D00F3002F /* NSString+Digest.m */; };
+		AB6329BB191D5AB600770EFC /* NSData+Digest.m in Sources */ = {isa = PBXBuildFile; fileRef = AB36535C191D4AB300F3002F /* NSData+Digest.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -61,10 +61,10 @@
 		0D28502B18C50FD80040CE06 /* libcommonCrypto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcommonCrypto.dylib; path = usr/lib/system/libcommonCrypto.dylib; sourceTree = SDKROOT; };
 		AB1B1F0C191C184E0002610B /* PPKeyPair.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PPKeyPair.h; sourceTree = "<group>"; };
 		AB1B1F0D191C184E0002610B /* PPKeyPair.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PPKeyPair.m; sourceTree = "<group>"; };
-		AB36535B191D4AB300F3002F /* NSData+SHADigest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+SHADigest.h"; sourceTree = "<group>"; };
-		AB36535C191D4AB300F3002F /* NSData+SHADigest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+SHADigest.m"; sourceTree = "<group>"; };
-		AB36535E191D556D00F3002F /* NSString+SHADigest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+SHADigest.h"; sourceTree = "<group>"; };
-		AB36535F191D556D00F3002F /* NSString+SHADigest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+SHADigest.m"; sourceTree = "<group>"; };
+		AB36535B191D4AB300F3002F /* NSData+Digest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+Digest.h"; sourceTree = "<group>"; };
+		AB36535C191D4AB300F3002F /* NSData+Digest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+Digest.m"; sourceTree = "<group>"; };
+		AB36535E191D556D00F3002F /* NSString+Digest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+Digest.h"; sourceTree = "<group>"; };
+		AB36535F191D556D00F3002F /* NSString+Digest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+Digest.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -162,10 +162,10 @@
 		AB365361191D562300F3002F /* Categories */ = {
 			isa = PBXGroup;
 			children = (
-				AB36535E191D556D00F3002F /* NSString+SHADigest.h */,
-				AB36535F191D556D00F3002F /* NSString+SHADigest.m */,
-				AB36535B191D4AB300F3002F /* NSData+SHADigest.h */,
-				AB36535C191D4AB300F3002F /* NSData+SHADigest.m */,
+				AB36535E191D556D00F3002F /* NSString+Digest.h */,
+				AB36535F191D556D00F3002F /* NSString+Digest.m */,
+				AB36535B191D4AB300F3002F /* NSData+Digest.h */,
+				AB36535C191D4AB300F3002F /* NSData+Digest.m */,
 			);
 			name = Categories;
 			sourceTree = "<group>";
@@ -253,8 +253,8 @@
 			files = (
 				0D28500D18C50FC10040CE06 /* PPEncrypt.m in Sources */,
 				AB1B1F0E191C184E0002610B /* PPKeyPair.m in Sources */,
-				AB365360191D556D00F3002F /* NSString+SHADigest.m in Sources */,
-				AB36535D191D4AB300F3002F /* NSData+SHADigest.m in Sources */,
+				AB365360191D556D00F3002F /* NSString+Digest.m in Sources */,
+				AB36535D191D4AB300F3002F /* NSData+Digest.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -262,8 +262,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AB6329BA191D5AB600770EFC /* NSString+SHADigest.m in Sources */,
-				AB6329BB191D5AB600770EFC /* NSData+SHADigest.m in Sources */,
+				AB6329BA191D5AB600770EFC /* NSString+Digest.m in Sources */,
+				AB6329BB191D5AB600770EFC /* NSData+Digest.m in Sources */,
 				0D28502218C50FC10040CE06 /* PPEncryptTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
