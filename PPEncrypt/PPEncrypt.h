@@ -26,16 +26,11 @@ typedef NS_ENUM(NSInteger, PPEncryptRSASize) {
 
 @interface PPEncrypt : NSObject
 
-@property (nonatomic, strong, readonly) PPEncryptSettings *settings;
-@property (nonatomic, strong, readonly) PPKeyPair *keyPair;
-
-- (instancetype)initWithSettings:(PPEncryptSettings *)settings keyPair:(PPKeyPair *)pair;
-
 + (PPKeyPair *)generateKeyPairWithSize:(PPEncryptRSASize)size identifier:(NSString *)identifier;
 + (PPKeyPair *)keyPairWithIdentifier:(NSString *)identifier;
 
-+ (NSData *)encryptString:(NSString *)string withPadding:(SecPadding)padding andPair:(PPKeyPair *)pair;
-+ (NSString *)decryptData:(NSData *)data withPadding:(SecPadding)padding andPair:(PPKeyPair *)pair;
++ (NSString *)encrypt:(NSString *)string withPair:(PPKeyPair *)pair;
++ (NSString *)decrypt:(NSString *)data withPair:(PPKeyPair *)pair;
 
 + (NSData *)signData:(NSData *)data withPadding:(SecPadding)padding andPair:(PPKeyPair *)pair;
 + (BOOL)verifyData:(NSData *)data againstSignature:(NSData *)signature withPadding:(SecPadding)padding andPair:(PPKeyPair *)pair;

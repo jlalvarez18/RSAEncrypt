@@ -10,29 +10,29 @@
 	<string>PPEncrypt</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
-		<key>1F82FA7F-F3DE-48B1-A163-14FF6AF4EBA4</key>
-		<string>https://alvarez-server.local/git/PPEncrypt.git</string>
+		<key>CA89CE453002FC643BFBAD2ACA30701B1ABBE999</key>
+		<string>ssh://alvarez-server.local/git/PPEncrypt.git</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
-	<string>PPEncrypt.xcodeproj/project.xcworkspace</string>
+	<string>PPEncrypt.xcodeproj</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
-		<key>1F82FA7F-F3DE-48B1-A163-14FF6AF4EBA4</key>
+		<key>CA89CE453002FC643BFBAD2ACA30701B1ABBE999</key>
 		<string>../..</string>
 	</dict>
 	<key>IDESourceControlProjectURL</key>
-	<string>https://alvarez-server.local/git/PPEncrypt.git</string>
+	<string>ssh://alvarez-server.local/git/PPEncrypt.git</string>
 	<key>IDESourceControlProjectVersion</key>
-	<integer>110</integer>
+	<integer>111</integer>
 	<key>IDESourceControlProjectWCCIdentifier</key>
-	<string>1F82FA7F-F3DE-48B1-A163-14FF6AF4EBA4</string>
+	<string>CA89CE453002FC643BFBAD2ACA30701B1ABBE999</string>
 	<key>IDESourceControlProjectWCConfigurations</key>
 	<array>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>
 			<key>IDESourceControlWCCIdentifierKey</key>
-			<string>1F82FA7F-F3DE-48B1-A163-14FF6AF4EBA4</string>
+			<string>CA89CE453002FC643BFBAD2ACA30701B1ABBE999</string>
 			<key>IDESourceControlWCCName</key>
 			<string>PPEncrypt</string>
 		</dict>

@@ -11,7 +11,15 @@
 @interface PPKeyPair : NSObject
 
 @property (nonatomic, strong, readonly) NSString *identifier;
-@property (nonatomic, strong, readonly) NSString *publicKey;
-@property (nonatomic, strong, readonly) NSString *privateKey;
+
+@property (nonatomic, assign, readonly) SecKeyRef privateKeyRef;
+@property (nonatomic, assign, readonly) SecKeyRef publicKeyRef;
+
+- (instancetype)initWithIdentifier:(NSString *)identifier
+                         publicKey:(SecKeyRef)publicKey
+                        privateKey:(SecKeyRef)privateKey;
+
+- (NSString *)X509FormattedPublicKeyString;
+- (NSString *)PEMFormattedPrivateKeyString;
 
 @end

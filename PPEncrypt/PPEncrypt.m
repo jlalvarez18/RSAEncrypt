@@ -12,30 +12,13 @@
 
 #import "NSData+Digest.h"
 
-// Inspiration from https://github.com/kuapay/iOS-Certificate--Key--and-Trust-Sample-Project
-
-static unsigned char oidSequence [] = { 0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x01, 0x01, 0x05, 0x00 };
-
 @import Security;
 
 @interface PPEncrypt ()
 
-@property (nonatomic, strong) PPEncryptSettings *settings;
-@property (nonatomic, strong) PPKeyPair *keyPair;
-
 @end
 
 @implementation PPEncrypt
-
-- (instancetype)initWithSettings:(PPEncryptSettings *)settings keyPair:(PPKeyPair *)pair
-{
-    self = [super init];
-    
-    self.settings = settings;
-    self.keyPair = pair;
-    
-    return self;
-}
 
 + (PPKeyPair *)generateKeyPairWithSize:(PPEncryptRSASize)size identifier:(NSString *)identifier
 {
@@ -45,33 +28,35 @@ static unsigned char oidSequence [] = { 0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48
     [self removeKey:publicKeyIdentifier error:nil];
     [self removeKey:privateKeyIdentifier error:nil];
     
-    NSMutableDictionary *publicKeyAttributes = [[NSMutableDictionary alloc] init];
-	[publicKeyAttributes setObject:@YES forKey:(__bridge id)kSecAttrIsPermanent];
-    [publicKeyAttributes setObject:[publicKeyIdentifier dataUsingEncoding:NSUTF8StringEncoding] forKey:(__bridge id)kSecAttrApplicationTag];
+    NSData *publicKeyIdentifierData = [publicKeyIdentifier dataUsingEncoding:NSUTF8StringEncoding];
+    NSData *privateKeyIdentifierData = [privateKeyIdentifier dataUsingEncoding:NSUTF8StringEncoding];
     
-    NSMutableDictionary *privateKeyAttributes = [[NSMutableDictionary alloc] init];
-	[privateKeyAttributes setObject:@YES forKey:(__bridge id)kSecAttrIsPermanent];
-    [privateKeyAttributes setObject:[privateKeyIdentifier dataUsingEncoding:NSUTF8StringEncoding] forKey:(__bridge id)kSecAttrApplicationTag];
+    NSDictionary *publicKeyAttributes = @{
+                                          (__bridge id)kSecAttrIsPermanent: @YES,
+                                          (__bridge id)kSecAttrApplicationTag: publicKeyIdentifierData
+                                          };
     
-    NSMutableDictionary *keyPairAttributes = [NSMutableDictionary dictionary];
-    [keyPairAttributes setObject:(__bridge id)kSecAttrKeyTypeRSA forKey:(__bridge id)kSecAttrKeyType];
-    [keyPairAttributes setObject:@(size) forKey:(__bridge id)kSecAttrKeySizeInBits];
-    [keyPairAttributes setObject:privateKeyAttributes forKey:(__bridge id)kSecPrivateKeyAttrs];
-    [keyPairAttributes setObject:publicKeyAttributes forKey:(__bridge id)kSecPublicKeyAttrs];
+    NSDictionary *privateKeyAttributes = @{
+                                           (__bridge id)kSecAttrIsPermanent: @YES,
+                                           (__bridge id)kSecAttrApplicationTag: privateKeyIdentifierData
+                                           };
+    
+    NSDictionary *keypairAttributes = @{
+                                        (__bridge id)kSecAttrKeyType: (__bridge id)kSecAttrKeyTypeRSA,
+                                        (__bridge id)kSecAttrKeySizeInBits: @(size),
+                                        (__bridge id)kSecPrivateKeyAttrs: privateKeyAttributes,
+                                        (__bridge id)kSecPublicKeyAttrs: publicKeyAttributes
+                                        };
 	
     SecKeyRef publicKey = NULL;
 	SecKeyRef privateKey = NULL;
     
-	OSStatus status = SecKeyGeneratePair((__bridge CFDictionaryRef)keyPairAttributes, &publicKey, &privateKey);
+	OSStatus status = SecKeyGeneratePair((__bridge CFDictionaryRef)keypairAttributes, &publicKey, &privateKey);
     
     PPKeyPair *pair;
     
     if (status == errSecSuccess) {
         pair = [self keyPairWithIdentifier:identifier];
-        
-        if (pair.publicKey == nil || pair.privateKey == nil) {
-            pair = nil;
-        }
     }
     
     return pair;
@@ -88,11 +73,9 @@ static unsigned char oidSequence [] = { 0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48
     PPKeyPair *pair;
     
     if (publicKey && privateKey) {
-        pair = [[PPKeyPair alloc] init];
-        
-        [pair setValue:identifier forKey:@"identifier"];
-        [pair setValue:[self X509FormattedPublicKey:publicKeyIdentifier error:nil] forKey:@"publicKey"];
-        [pair setValue:[self PEMFormattedPrivateKey:privateKeyIdentifier error:nil] forKey:@"privateKey"];
+        pair = [[PPKeyPair alloc] initWithIdentifier:identifier
+                                           publicKey:publicKey
+                                          privateKey:privateKey];
     }
     
     return pair;
@@ -100,36 +83,22 @@ static unsigned char oidSequence [] = { 0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48
 
 #pragma mark - Encryption Methods
 
-- (NSData *)encryptString:(NSString *)string
-{
-    return [PPEncrypt encryptString:string withPadding:self.settings.padding andPair:self.keyPair];
-}
-
-+ (NSData *)encryptString:(NSString *)string withPadding:(SecPadding)padding andPair:(PPKeyPair *)pair
++ (NSString *)encrypt:(NSString *)string withPair:(PPKeyPair *)pair
 {
     if (string == nil || pair == nil) {
         return nil;
     }
     
-    NSString *identifier = [PPEncrypt publicKeyIdentifierWithTag:pair.identifier];
-    
-    SecKeyRef publicKey = [PPEncrypt keyRefWithTag:identifier error:nil];
-    
-    size_t maxLength = SecKeyGetBlockSize(publicKey);
-    
-//    When PKCS1 padding is performed, the maximum length of data that can
-//    be encrypted is the value returned by SecKeyGetBlockSize() - 11.
-    if ([self isPaddingPKCS1:padding]) {
-        maxLength -= 11;
-    }
+    SecKeyRef publicKey = pair.publicKeyRef;
     
     uint8_t *nonce = (uint8_t *)[string UTF8String];
-    size_t nonceSize = strlen((char *)nonce);
+    size_t cipherBufferSize = SecKeyGetBlockSize(publicKey);
+    uint8_t *cipherBuffer = malloc(cipherBufferSize);
     
 //    Length of plainText in bytes, this must be less than
 //    or equal to the value returned by SecKeyGetBlockSize().
-    if (nonceSize > maxLength) {
-        NSString *reason = [NSString stringWithFormat:@"String length is too long to sign with this key, max length is %ld and actual length is %ld", maxLength, nonceSize];
+    if (cipherBufferSize < sizeof(nonce)) {
+        NSString *reason = [NSString stringWithFormat:@"String length is too long to sign with this key, max length is %ld and actual length is %ld", cipherBufferSize, strlen((char *)nonce)];
         NSLog(@"%@", reason);
         
         return nil;
@@ -137,88 +106,67 @@ static unsigned char oidSequence [] = { 0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48
     
     NSData *encryptedData;
     
-    if (publicKey) {
-        size_t cipherBufferSize = SecKeyGetBlockSize(publicKey);
-        uint8_t *cipherBuffer = malloc(cipherBufferSize);
-        
-        OSStatus status = SecKeyEncrypt(publicKey,
-                                        padding,
-                                        nonce,
-                                        nonceSize,
-                                        &cipherBuffer[0],
-                                        &cipherBufferSize);
-        
-        if (status == errSecSuccess) {
-            encryptedData = [NSData dataWithBytes:cipherBuffer length:cipherBufferSize];
-        }
-        
-        free(cipherBuffer);
+    OSStatus status = SecKeyEncrypt(publicKey,
+                                    kSecPaddingPKCS1,
+                                    nonce,
+                                    strlen((char *)nonce),
+                                    &cipherBuffer[0],
+                                    &cipherBufferSize);
+    
+    if (status == errSecSuccess) {
+        encryptedData = [NSData dataWithBytes:cipherBuffer length:cipherBufferSize];
     }
     
-    return encryptedData;
+    free(cipherBuffer);
+    
+    return [encryptedData base64EncodedStringWithOptions:0];
 }
 
 #pragma mark - Decryption Methods
 
-- (NSString *)decryptData:(NSData *)data
++ (NSString *)decrypt:(NSString *)cipherText withPair:(PPKeyPair *)pair
 {
-    return [PPEncrypt decryptData:data withPadding:self.settings.padding andPair:self.keyPair];
-}
-
-+ (NSString *)decryptData:(NSData *)data withPadding:(SecPadding)padding andPair:(PPKeyPair *)pair
-{
-    if (pair == nil || pair == nil) {
+    if (cipherText == nil || pair == nil) {
         return nil;
     }
     
-    NSString *identifier = [self privateKeyIdentifierWithTag:pair.identifier];
+    SecKeyRef privateKey = pair.privateKeyRef;
     
-    SecKeyRef privateKey = [self keyRefWithTag:identifier error:nil];
+    size_t plainBufferSize = SecKeyGetBlockSize(privateKey);
+    uint8_t *plainBuffer = malloc(plainBufferSize);
     
-    size_t keySize = SecKeyGetBlockSize(privateKey);
+    NSData *data = [[NSData alloc] initWithBase64EncodedString:cipherText options:0];
     
-    if (data.length > keySize) {
-        NSString *reason = [NSString stringWithFormat:@"Cipher size is too long to sign with this key, max length is %ld and actual length is %ld", keySize, (unsigned long)data.length];
+    uint8_t *cipherBuffer = (uint8_t*)[data bytes];
+    size_t cipherBufferSize = SecKeyGetBlockSize(privateKey);
+    
+    if (plainBufferSize < cipherBufferSize) {
+        NSString *reason = [NSString stringWithFormat:@"Cipher size is too long to sign with this key, max length is %ld and actual length is %ld", plainBufferSize, (unsigned long)cipherText.length];
         
         NSLog(@"%@", reason);
         
         return nil;
     }
     
+    OSStatus status = SecKeyDecrypt(privateKey,
+                                    kSecPaddingPKCS1,
+                                    cipherBuffer,
+                                    cipherBufferSize,
+                                    plainBuffer,
+                                    &plainBufferSize);
+    
     NSString *decryptedString;
     
-    if (privateKey) {
-        size_t plainBufferSize = SecKeyGetBlockSize(privateKey);
-        uint8_t *plainBuffer = malloc(keySize);
+    if (status == errSecSuccess) {
+        NSData *bufferData = [NSData dataWithBytesNoCopy:plainBuffer length:plainBufferSize freeWhenDone:YES];
         
-        uint8_t *cipher = (uint8_t*)[data bytes];
-        size_t cipherSize = strlen((char *)cipher);
-        
-        OSStatus status = SecKeyDecrypt(privateKey,
-                                        padding,
-                                        cipher,
-                                        cipherSize,
-                                        plainBuffer,
-                                        &plainBufferSize);
-        
-        if (status == errSecSuccess) {
-            NSData *decryptedData = [NSData dataWithBytes:plainBuffer length:plainBufferSize];
-            
-            decryptedString = [[NSString alloc] initWithData:decryptedData encoding:NSUTF8StringEncoding];
-        }
-        
-        free(plainBuffer);
+        decryptedString = [[NSString alloc] initWithData:bufferData encoding:NSUTF8StringEncoding];
     }
     
     return decryptedString;
 }
 
 #pragma mark - Signing Methods
-
-- (NSData *)signData:(NSData *)data
-{
-    return [PPEncrypt signData:data withPadding:self.settings.padding andPair:self.keyPair];
-}
 
 + (NSData *)signData:(NSData *)data withPadding:(SecPadding)padding andPair:(PPKeyPair *)pair
 {
@@ -342,99 +290,6 @@ static unsigned char oidSequence [] = { 0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48
     return nil;
 }
 
-+ (NSString *)PEMFormattedPrivateKey:(NSString *)tag error:(NSError **)error
-{
-    NSError *keyDataError;
-    NSData *privateKeyData = [self keyDataWithTag:tag error:&keyDataError];
-    
-    if (keyDataError) {
-        *error = keyDataError;
-        
-        return nil;
-    }
-    
-    NSString *result = [NSString stringWithFormat:@"%@\n%@\n%@",
-                        [self PEMPrivateHeader],
-                        [privateKeyData base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength],
-                        [self PEMPrivateFooter]];
-    
-    return result;
-}
-
-
-+ (NSString *)X509FormattedPublicKey:(NSString *)tag error:(NSError **)error
-{
-    NSError *keyDataError;
-    NSData *publicKeyData = [self keyDataWithTag:tag error:&keyDataError];
-    
-    if (keyDataError)
-    {
-        *error = keyDataError;
-        
-        return nil;
-    }
-    
-    unsigned char builder[15];
-    int bitstringEncLength;
-    if  ([publicKeyData length] + 1  < 128 )
-    {
-        bitstringEncLength = 1 ;
-    }
-    else
-    {
-        bitstringEncLength = (([publicKeyData length ] + 1)/256) + 2;
-    }
-    
-    builder[0] = 0x30;
-    
-    size_t i = sizeof(oidSequence) + 2 + bitstringEncLength + [publicKeyData length];
-    size_t j = [self encode:&builder[1]
-                     length:i];
-    
-    NSMutableData *encodedKey = [[NSMutableData alloc] init];
-    
-    [encodedKey appendBytes:builder
-                     length:j + 1];
-    
-    [encodedKey appendBytes:oidSequence
-                     length:sizeof(oidSequence)];
-    
-    builder[0] = 0x03;
-    j = [self encode:&builder[1]
-              length:[publicKeyData length] + 1];
-    
-    builder[j+1] = 0x00;
-    [encodedKey appendBytes:builder
-                     length:j + 2];
-    
-    [encodedKey appendData:publicKeyData];
-    
-    NSString *returnString = [NSString stringWithFormat:@"%@\n%@\n%@",
-                              [self X509PublicHeader],
-                              [encodedKey base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength],
-                              [self X509PublicFooter]];
-    
-    return returnString;
-}
-
-+ (size_t)encode:(unsigned char *)buffer length:(size_t)length
-{
-    if (length < 128)
-    {
-        buffer[0] = length;
-        return 1;
-    }
-    
-    size_t i = (length / 256) + 1;
-    buffer[0] = i + 0x80;
-    for (size_t j = 0 ; j < i; ++j)
-    {
-        buffer[i - j] = length & 0xFF;
-        length = length >> 8;
-    }
-    
-    return i + 1;
-}
 
 #pragma mark - Keychain Methods
 
@@ -446,9 +301,10 @@ static unsigned char oidSequence [] = { 0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48
     SecKeyRef key = NULL;
     OSStatus err = SecItemCopyMatching((__bridge CFDictionaryRef)queryKey, (CFTypeRef *)&key);
     
-    if (err != noErr || !key)
-    {
-        *error = [NSError errorWithDomain:@"" code:0 userInfo:nil];
+    if (err != noErr || !key) {
+        if (error != NULL) {
+            *error = [NSError errorWithDomain:@"" code:0 userInfo:nil];
+        }
         
         return nil;
     }
@@ -460,13 +316,15 @@ static unsigned char oidSequence [] = { 0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48
 + (SecKeyRef)keyRefWithTag:(NSString *)tag error:(NSError **)error
 {
     NSMutableDictionary *queryKey = [self keyQueryDictionary:tag];
-    [queryKey setObject:[NSNumber numberWithBool:YES] forKey:(__bridge id)kSecReturnRef];
+    [queryKey setObject:@YES forKey:(__bridge id)kSecReturnRef];
     
     SecKeyRef key = NULL;
     OSStatus err = SecItemCopyMatching((__bridge CFDictionaryRef)queryKey, (CFTypeRef *)&key);
     
     if (err != noErr) {
-        *error = [NSError errorWithDomain:@"" code:0 userInfo:nil];
+        if (error != NULL) {
+            *error = [NSError errorWithDomain:@"" code:0 userInfo:nil];
+        }
         
         return nil;
     }
@@ -474,15 +332,21 @@ static unsigned char oidSequence [] = { 0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48
     return key;
 }
 
-+ (void)removeKey:(NSString *)tag error:(NSError **)error
++ (BOOL)removeKey:(NSString *)tag error:(NSError **)error
 {
     NSDictionary *queryKey = [self keyQueryDictionary:tag];
     OSStatus secStatus = SecItemDelete((__bridge CFDictionaryRef)queryKey);
     
     if ((secStatus != noErr) && (secStatus != errSecDuplicateItem))
     {
-        *error = [NSError errorWithDomain:@"" code:0 userInfo:nil];
+        if (error != NULL) {
+            *error = [NSError errorWithDomain:@"" code:0 userInfo:nil];
+        }
+        
+        return NO;
     }
+    
+    return YES;
 }
 
 
@@ -501,68 +365,18 @@ static unsigned char oidSequence [] = { 0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48
 
 #pragma mark - Identifier Methods
 
-+ (NSString *)publicKeyIdentifier
++ (NSString *)publicKeyIdentifierWithTag:(NSString *)tag
 {
-    return [self publicKeyIdentifierWithTag:nil];
-}
-
-+ (NSString *)privateKeyIdentifier
-{
-    return [self privateKeyIdentifierWithTag:nil];
-}
-
-+ (NSString *)publicKeyIdentifierWithTag:(NSString *)additionalTag
-{
-    NSString *identifier = [NSString stringWithFormat:@"%@.publicKey", [[NSBundle mainBundle] bundleIdentifier]];
-    
-    if (additionalTag) {
-        identifier = [identifier stringByAppendingFormat:@".%@", additionalTag];
-    }
+    NSString *identifier = [NSString stringWithFormat:@"%@.publicKey", tag];
     
     return identifier;
 }
 
-+ (NSString *)privateKeyIdentifierWithTag:(NSString *)additionalTag
++ (NSString *)privateKeyIdentifierWithTag:(NSString *)tag
 {
-    NSString *identifier = [NSString stringWithFormat:@"%@.privateKey", [[NSBundle mainBundle] bundleIdentifier]];
-    
-    if (additionalTag) {
-        identifier = [identifier stringByAppendingFormat:@".%@", additionalTag];
-    }
+    NSString *identifier = [NSString stringWithFormat:@"%@.privateKey", tag];
     
     return identifier;
-}
-
-#pragma mark - RSA Key Anatomy
-
-+ (NSString *)X509PublicHeader
-{
-    return @"-----BEGIN PUBLIC KEY-----";
-}
-
-+ (NSString *)X509PublicFooter
-{
-    return @"-----END PUBLIC KEY-----";
-}
-
-+ (NSString *)PKCS1PublicHeader
-{
-    return  @"-----BEGIN RSA PUBLIC KEY-----";
-}
-
-+ (NSString *)PKCS1PublicFooter
-{
-    return @"-----END RSA PUBLIC KEY-----";
-}
-
-+ (NSString *)PEMPrivateHeader
-{
-    return @"-----BEGIN RSA PRIVATE KEY-----";
-}
-
-+ (NSString *)PEMPrivateFooter
-{
-    return @"-----END RSA PRIVATE KEY-----";
 }
 
 @end
